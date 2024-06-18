@@ -7,4 +7,9 @@ run: build
 test:
 	@go test -v ./...
 
+startdb:
+	@docker start jsonapi
+
+stopdb:
+	@docker stop jsonapi
 
