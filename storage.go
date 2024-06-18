@@ -88,7 +88,7 @@ func (s *PostgresStore) GetAccountById(id int) (*Account, error) {
 }
 
 func (s *PostgresStore) GetAccounts() ([]*Account, error) {
-	rows, err := s.db.Query("SELECT * FROM accounts")
+	rows, err := s.db.Query("SELECT * FROM account")
 	if err != nil {
 		return nil, err
 	}
