@@ -26,28 +26,37 @@ func (s *APIServer) Run() {
 
 	router.HandleFunc("/account", makeHTTPHandlefunc(s.handleAccount))
 
-	router.HandleFunc("/account/{id}", makeHTTPHandlefunc(s.handleGetAccount))
+	router.HandleFunc("/account/{id}", makeHTTPHandlefunc(s.handleGetAccountById))
 
 	log.Println("Starting server on", s.listenAddress)
 
 	http.ListenAndServe(s.listenAddress, router)
 }
 
-func (a *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
-		return a.handleGetAccount(w, r)
+		return s.handleGetAccount(w, r)
 	}
 	if r.Method == "POST" {
-		return a.handleCreateAccount(w, r)
+		return s.handleCreateAccount(w, r)
 	}
 	if r.Method == "DELETE" {
-		return a.handleDeleteAccount(w, r)
+		return s.handleDeleteAccount(w, r)
 	}
 
 	return fmt.Errorf("unsupported method %s", r.Method)
 }
 
-func (a *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
+	accounts, err := s.store.GetAccounts()
+	if err != nil {
+		return err
+	}
+	return WriteJSON(w, http.StatusOK, accounts)
+}
+
+func (s *APIServer) handleGetAccountById(w http.ResponseWriter, r *http.Request) error {
+
 	id := mux.Vars(r)["id"]
 
 	fmt.Println("id", id)
@@ -55,15 +64,25 @@ func (a *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 	return WriteJSON(w, http.StatusOK, &Account{})
 }
 
-func (a *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
+	createAccountReq := new(CreateAccountRequest)
+	if err := json.NewDecoder(r.Body).Decode(createAccountReq); err != nil {
+		return err
+	}
+
+	account := NewAccount(createAccountReq.FirstName, createAccountReq.LastName)
+	if err := s.store.CreateAccount(account); err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, account)
+}
+
+func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (a *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
-func (a *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
