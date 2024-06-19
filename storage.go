@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -20,7 +21,13 @@ type PostgresStore struct {
 }
 
 func NewPostgresStore() (*PostgresStore, error) {
-	connStr := "user=postgres dbname=postgres password=jsonapi sslmode=disable"
+	password := os.Getenv("POSTGRES_PASSWORD")
+
+	if password == "" {
+		return nil, fmt.Errorf("POSTGRES_PASSWORD environment variable not set")
+	}
+
+	connStr := fmt.Sprintf("user=postgres dbname=postgres password=%s sslmode=disable", password)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
