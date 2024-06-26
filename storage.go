@@ -83,7 +83,9 @@ func (s *PostgresStore) CreateAccount(acc *Account) error {
 }
 
 func (s *PostgresStore) DeleteAccount(id int) error {
-	return nil
+	// ideally flag this as a soft delete, but for now we'll just delete the record
+	_, err := s.db.Exec("DELETE FROM account WHERE id = $1", id)
+	return err
 }
 
 func (s *PostgresStore) UpdateAccount(*Account) error {
